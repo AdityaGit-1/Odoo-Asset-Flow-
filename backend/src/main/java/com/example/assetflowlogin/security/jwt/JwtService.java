@@ -84,5 +84,15 @@ public class JwtService {
                 .getPayload();
 
     }
-
+    public Date extractExpiration(String token) {
+        return extractClaims(token).getExpiration();
+    }
+    public boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+    public boolean validateToken(String token, UserDetails userDetails) {
+        String email = extractEmail(token);
+        return email.equals(userDetails.getUsername())
+                && !isTokenExpired(token);
+    }
 }
