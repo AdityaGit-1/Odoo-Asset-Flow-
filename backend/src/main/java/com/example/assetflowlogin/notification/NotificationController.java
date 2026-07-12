@@ -1,5 +1,6 @@
 package com.example.assetflowlogin.notification;
 
+import com.example.assetflowlogin.security.SecurityUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -28,14 +29,14 @@ public class NotificationController {
     // GET /api/notifications -> caller's notifications (unread first)
     @GetMapping
     public List<Notification> list(Authentication auth) {
-        Long recipientId = Long.valueOf(auth.getName());
+        Long recipientId = SecurityUtils.getCurrentUserId();
         return repository.findForRecipientUnreadFirst(recipientId);
     }
 
     // PATCH /api/notifications/{id}/read -> mark read
     @PatchMapping("/{id}/read")
     public ResponseEntity<Void> markRead(@PathVariable Long id, Authentication auth) {
-        Long recipientId = Long.valueOf(auth.getName());
+        Long recipientId = SecurityUtils.getCurrentUserId();
         return repository.findById(id)
                 .filter(n -> n.getRecipientId().equals(recipientId))
                 .map(n -> {
@@ -49,7 +50,7 @@ public class NotificationController {
     // GET /api/notifications/stream -> optional SSE for live push
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(Authentication auth) {
-        Long recipientId = Long.valueOf(auth.getName());
+        Long recipientId = SecurityUtils.getCurrentUserId();
         SseEmitter emitter = new SseEmitter(0L); // no timeout
         emittersByRecipient.computeIfAbsent(recipientId, k -> new CopyOnWriteArrayList<>()).add(emitter);
         emitter.onCompletion(() -> emittersByRecipient.getOrDefault(recipientId, new CopyOnWriteArrayList<>()).remove(emitter));

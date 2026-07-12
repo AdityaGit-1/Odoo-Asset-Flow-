@@ -51,6 +51,8 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
 
+                .cors(org.springframework.security.config.Customizer.withDefaults())
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
@@ -77,6 +79,22 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    // Single-origin CORS for the Next.js frontend. Origin is configurable via
+    // app.frontend-origin (defaults to localhost:3000).
+    @Bean
+    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource(
+            @org.springframework.beans.factory.annotation.Value("${app.frontend-origin:http://localhost:3000}") String origin) {
+        org.springframework.web.cors.CorsConfiguration config = new org.springframework.web.cors.CorsConfiguration();
+        config.setAllowedOrigins(java.util.List.of(origin));
+        config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(java.util.List.of("*"));
+        config.setAllowCredentials(true);
+        org.springframework.web.cors.UrlBasedCorsConfigurationSource source =
+                new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
 }

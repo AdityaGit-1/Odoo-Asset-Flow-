@@ -120,7 +120,8 @@ async function transport(path: string, init: RequestInit): Promise<Response> {
     const { mockFetch } = await import("./mock/router");
     return mockFetch(path, init);
   }
-  return fetch(`${BASE}${path}`, init);
+  const { remapPath } = await import("./adapter");
+  return fetch(`${BASE}${remapPath(path)}`, init);
 }
 
 // ---- Refresh-once, shared in-flight promise -----------------------------------
@@ -137,8 +138,14 @@ async function doRefresh(): Promise<boolean> {
       body: JSON.stringify({ refresh }),
     });
     if (!res.ok) return false;
-    const tokens = (await res.json()) as TokenPair;
-    if (!tokens?.access) return false;
+    let payload: unknown = await res.json();
+    if (!MOCKS_ENABLED) {
+      const { unwrapEnvelope } = await import("./adapter");
+      payload = unwrapEnvelope(res.status, payload);
+    }
+    const { normalizeTokens } = await import("./adapter");
+    const tokens = normalizeTokens(payload);
+    if (!tokens) return false;
     setSession(tokens);
     return true;
   } catch {
@@ -168,14 +175,19 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
 
 async function execute(path: string, opts: RequestOptions): Promise<Response> {
   const { body, anonymous, headers, ...rest } = opts;
+  let outBody = body;
+  if (!MOCKS_ENABLED && body !== undefined) {
+    const { adaptRequestBody } = await import("./adapter");
+    outBody = adaptRequestBody(path, body);
+  }
   return transport(path, {
     ...rest,
     headers: {
-      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+      ...(outBody !== undefined ? { "Content-Type": "application/json" } : {}),
       ...(!anonymous && accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       ...headers,
     },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: outBody !== undefined ? JSON.stringify(outBody) : undefined,
   });
 }
 
@@ -198,7 +210,11 @@ export async function request<T>(path: string, opts: RequestOptions = {}): Promi
   if (opts.raw) return res as unknown as T;
   if (res.status === 204) return undefined as T;
   const text = await res.text();
-  return (text ? JSON.parse(text) : undefined) as T;
+  const parsed = text ? JSON.parse(text) : undefined;
+  if (MOCKS_ENABLED) return parsed as T;
+  // Real backend: unwrap APIResponse<T> (success:false → ApiError) then fix shapes.
+  const { unwrapEnvelope, adaptResponse } = await import("./adapter");
+  return adaptResponse(path, unwrapEnvelope(res.status, parsed)) as T;
 }
 
 export const api = {

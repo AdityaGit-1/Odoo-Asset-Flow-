@@ -19,4 +19,7 @@ public class AssetCategory extends BaseEntity {
     private String name;
 
     private String description;
+
+    @Column(nullable = false)
+    private boolean active = true;
 }
