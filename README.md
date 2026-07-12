@@ -122,21 +122,6 @@ endpoints until each backend phase lands.
 
 ---
 
-## The two invariants judges will poke at (build these to win)
-
-1. **Booking overlap = a Postgres exclusion constraint.** Overlaps become
-   *physically impossible* at the DB, not defended in app code. `tstzrange` with
-   `[)` semantics gives the exact spec behaviour (9–10 and 10–11 don't clash;
-   9:30–10:30 does). See Phase 4.
-2. **Allocation conflict = a partial unique index** (`UNIQUE (asset_id) WHERE
-   status='ACTIVE'`) as the DB guarantee, plus `SELECT … FOR UPDATE` on the asset
-   row for the clean *"currently held by Priya"* message + transfer offer. Belt and
-   suspenders. See Phase 4.
-
-If you demo nothing else deeply, demo these two under concurrent requests.
-
----
-
 ## Definition of done (whole project)
 
 - Every role can log in and sees a role-appropriate dashboard with live KPIs.
