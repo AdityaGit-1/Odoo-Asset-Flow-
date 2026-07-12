@@ -98,8 +98,8 @@ public class AuthServiceImpl implements AuthService {
 
         // First save so the database assigns an id; employeeCode is derived
         // from that id, never from repository.count(), so codes are never reused.
-        user = userRepository.save(user);
-        user.setEmployeeCode(generateEmployeeCode(user.getId()));
+        Long seq = userRepository.getNextEmployeeCodeSequence();
+        user.setEmployeeCode(String.format("EMP-%05d", seq));
         user = userRepository.save(user);
 
         issueEmailVerificationOtp(user);
