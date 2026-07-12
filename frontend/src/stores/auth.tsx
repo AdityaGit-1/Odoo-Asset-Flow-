@@ -70,7 +70,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const login = useCallback(async (email: string, password: string) => {
-    const tokens = await auth.login(email, password);
+    const raw = await auth.login(email, password);
+    // Real backend returns {accessToken,refreshToken,user}; mock returns {access,refresh}.
+    const { normalizeTokens } = await import("@/api/adapter");
+    const tokens = normalizeTokens(raw);
+    if (!tokens) throw new Error("Login response was missing tokens");
     setSession(tokens);
     const me = await auth.me();
     setUser(me);

@@ -14,10 +14,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.example.assetflowlogin.entity.User;
+import com.example.assetflowlogin.enums.Rolename;
+import com.example.assetflowlogin.security.SecurityUtils;
+import com.example.assetflowlogin.security.UserPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @Tag(name = "Authentication", description = "Registration, login, and account-recovery endpoints")
 @RestController
@@ -67,5 +74,25 @@ public class AuthController {
     @PostMapping("/reset-password")
     public APIResponse<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         return authService.resetPassword(request);
+    }
+
+    public record MeDto(Long id, String email, String role, String name, Long employeeId, Long departmentId) {}
+
+    // Highest privilege first — the single role the frontend gates on.
+    private static final List<Rolename> ROLE_PRECEDENCE =
+            List.of(Rolename.ADMIN, Rolename.ASSET_MANAGER, Rolename.DEPARTMENT_HEAD, Rolename.TECHNICIAN, Rolename.EMPLOYEE);
+
+    @Operation(summary = "The current session's user (validates the bearer token)")
+    @GetMapping("/me")
+    public APIResponse<MeDto> me() {
+        UserPrincipal principal = SecurityUtils.getCurrentUser();
+        if (principal == null) return APIResponse.error("Not authenticated");
+        User u = principal.getUser();
+        String role = ROLE_PRECEDENCE.stream()
+                .filter(r -> u.getRoles().stream().anyMatch(x -> x.getName() == r))
+                .findFirst().orElse(Rolename.EMPLOYEE).name();
+        String name = (u.getFirstName() + " " + (u.getLastName() == null ? "" : u.getLastName())).trim();
+        return APIResponse.success(new MeDto(u.getId(), u.getEmail(), role, name, u.getId(),
+                u.getDepartment() == null ? null : u.getDepartment().getId()));
     }
 }

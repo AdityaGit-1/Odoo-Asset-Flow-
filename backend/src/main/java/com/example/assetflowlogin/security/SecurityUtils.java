@@ -1,11 +1,25 @@
 package com.example.assetflowlogin.security;
 
+import com.example.assetflowlogin.enums.Rolename;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public class SecurityUtils {
 
     private SecurityUtils() {}
+
+    public static boolean hasRole(Rolename role) {
+        UserPrincipal p = getCurrentUser();
+        return p != null && p.getUser().getRoles().stream().anyMatch(r -> r.getName() == role);
+    }
+
+    public static boolean isAdmin() {
+        return hasRole(Rolename.ADMIN);
+    }
+
+    public static boolean isManager() {
+        return isAdmin() || hasRole(Rolename.ASSET_MANAGER);
+    }
 
     public static UserPrincipal getCurrentUser() {
 

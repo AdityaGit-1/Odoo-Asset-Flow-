@@ -34,4 +34,9 @@ public class AuditCycle extends BaseEntity {
     private LocalDate endDate;
 
     private String status;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "audit_cycle_auditors", joinColumns = @JoinColumn(name = "cycle_id"))
+    @Column(name = "auditor_id")
+    private java.util.Set<Long> auditorIds = new java.util.HashSet<>();
 }

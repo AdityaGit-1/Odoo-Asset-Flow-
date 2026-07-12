@@ -1,5 +1,6 @@
 package com.example.assetflowlogin.common;
 
+import com.example.assetflowlogin.security.UserPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -16,21 +17,20 @@ public final class CurrentUser {
     private CurrentUser() {}
 
     public static RoleScope scopeOf(Authentication auth) {
-        Long employeeId = Long.valueOf(auth.getName()); // subject == user id
-        String role = auth.getAuthorities().stream()
+        // The JWT subject is the email, not the id — read id + department off the
+        // authenticated UserPrincipal the JWT filter populates.
+        Long employeeId = null;
+        Long departmentId = null;
+        if (auth != null && auth.getPrincipal() instanceof UserPrincipal principal) {
+            employeeId = principal.getUser().getId();
+            departmentId = principal.getUser().getDepartment() == null
+                    ? null : principal.getUser().getDepartment().getId();
+        }
+        String role = auth == null ? "EMPLOYEE" : auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .findFirst()
                 .orElse("EMPLOYEE")
                 .replaceFirst("^ROLE_", "");
-        Long departmentId = extractClaim(auth, "departmentId");
         return new RoleScope(employeeId, role, departmentId);
-    }
-
-    private static Long extractClaim(Authentication auth, String claim) {
-        if (auth.getDetails() instanceof java.util.Map<?, ?> details) {
-            Object val = details.get(claim);
-            if (val != null) return Long.valueOf(val.toString());
-        }
-        return null;
     }
 }
