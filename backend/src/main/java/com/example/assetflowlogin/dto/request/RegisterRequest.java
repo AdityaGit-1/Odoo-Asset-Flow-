@@ -9,19 +9,19 @@ import lombok.Setter;
 @Setter
 public class RegisterRequest {
 
-    @NotBlank
+    @NotBlank(message = "First name is required")
     private String firstName;
 
     private String lastName;
 
     @Email
-    @NotBlank
+    @NotBlank(message = "Email is required")
     private String email;
 
     @NotBlank
-    @Size(min = 8, message = "Password must contain at least 8 characters")
+    @Size(min = 8, max = 100)
     private String password;
 
+    @NotNull
     private Long departmentId;
-
 }
