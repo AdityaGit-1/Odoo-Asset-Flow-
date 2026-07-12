@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -56,6 +57,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<APIResponse<Object>> handleDisabled(DisabledException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(APIResponse.error("Account is not enabled. Please verify your email."));
+    }
+
+    @ExceptionHandler(LockedException.class)
+    public ResponseEntity<APIResponse<Object>> handleLocked(LockedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(APIResponse.error("Account is temporarily locked due to too many failed login attempts."));
     }
 
     @ExceptionHandler(AuthenticationException.class)

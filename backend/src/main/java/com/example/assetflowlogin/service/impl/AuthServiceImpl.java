@@ -40,7 +40,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -82,18 +84,17 @@ public class AuthServiceImpl implements AuthService {
         Role employeeRole = roleRepository.findByName(Rolename.EMPLOYEE)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", "name", Rolename.EMPLOYEE));
 
-        User user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .department(department)
-                .roles(Set.of(employeeRole))
-                .enabled(false)
-                .emailVerified(false)
-                .status(UserStatus.ACTIVE)
-                .failedAttempts(0)
-                .build();
+        User user = new User();
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setDepartment(department);
+        user.setRoles(new HashSet<>(Set.of(employeeRole)));
+        user.setEnabled(false);
+        user.setEmailVerified(false);
+        user.setStatus(UserStatus.ACTIVE);
+        user.setFailedAttempts(0);
 
         // First save so the database assigns an id; employeeCode is derived
         // from that id, never from repository.count(), so codes are never reused.
@@ -117,12 +118,11 @@ public class AuthServiceImpl implements AuthService {
     private void issueEmailVerificationOtp(User user) {
         String otp = otpService.generateOtp();
 
-        EmailVerification verification = EmailVerification.builder()
-                .user(user)
-                .otp(otp)
-                .expiryDate(Instant.now().plusSeconds(OTP_EXPIRY_MINUTES * 60L))
-                .used(false)
-                .build();
+        EmailVerification verification = new EmailVerification();
+        verification.setUser(user);
+        verification.setOtp(otp);
+        verification.setExpiry(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES));
+        verification.setVerified(false);
         emailVerificationRepository.save(verification);
 
         emailService.sendVerificationEmail(user.getEmail(), user.getFirstName(), otp);
@@ -138,18 +138,18 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getEmail()));
 
         EmailVerification verification = emailVerificationRepository
-                .findTopByUserAndUsedFalseOrderByIdDesc(user)
+                .findTopByUserAndVerifiedFalseOrderByIdDesc(user)
                 .orElseThrow(InvalidOtpException::new);
 
         if (!verification.getOtp().equals(request.getOtp())) {
             throw new InvalidOtpException("The OTP you entered is incorrect.");
         }
 
-        if (verification.getExpiryDate().isBefore(Instant.now())) {
+        if (verification.getExpiry().isBefore(LocalDateTime.now())) {
             throw new TokenExpiredException("This OTP has expired. Please request a new one.");
         }
 
-        verification.setUsed(true);
+        verification.setVerified(true);
         emailVerificationRepository.save(verification);
 
         user.setEmailVerified(true);
@@ -179,17 +179,20 @@ public class AuthServiceImpl implements AuthService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
         user.setFailedAttempts(0);
+        user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 
         String accessToken = jwtService.generateAccessToken(user.getEmail());
         String refreshTokenValue = jwtService.generateRefreshToken(user.getEmail());
 
-        RefreshToken refreshToken = RefreshToken.builder()
-                .user(user)
-                .token(refreshTokenValue)
-                .expiryDate(Instant.now().plusMillis(jwtProperties.getRefreshTokenExpiration()))
-                .revoked(false)
-                .build();
+        // RefreshToken is a @OneToOne with User, so each user has at most one
+        // active refresh token row - reuse it on re-login instead of inserting
+        // a second row for the same user.
+        RefreshToken refreshToken = refreshTokenRepository.findByUser(user).orElseGet(RefreshToken::new);
+        refreshToken.setUser(user);
+        refreshToken.setToken(refreshTokenValue);
+        refreshToken.setExpiry(LocalDateTime.now().plus(Duration.ofMillis(jwtProperties.getRefreshTokenExpiration())));
+        refreshToken.setRevoked(false);
         refreshTokenRepository.save(refreshToken);
 
         return APIResponse.success("Login successful.",
@@ -205,15 +208,15 @@ public class AuthServiceImpl implements AuthService {
         RefreshToken storedToken = refreshTokenRepository.findByToken(request.getRefreshToken())
                 .orElseThrow(() -> new ResourceNotFoundException("Refresh token not found."));
 
-        if (storedToken.isRevoked()) {
+        if (Boolean.TRUE.equals(storedToken.getRevoked())) {
             throw new TokenExpiredException("This refresh token has been revoked. Please log in again.");
         }
 
         // isTokenValid() parses the signed JWT and returns false on any parsing
         // failure, including an expired token (jjwt throws ExpiredJwtException,
-        // which is caught internally) - so this single call covers signature,
-        // tampering, and expiry.
-        if (storedToken.getExpiryDate().isBefore(Instant.now())
+        // which is caught internally) - so this covers signature and expiry,
+        // and the stored expiry is checked too as a belt-and-suspenders guard.
+        if (storedToken.getExpiry().isBefore(LocalDateTime.now())
                 || !jwtService.isTokenValid(storedToken.getToken())) {
             throw new TokenExpiredException("Refresh token has expired. Please log in again.");
         }
@@ -248,12 +251,11 @@ public class AuthServiceImpl implements AuthService {
 
         String otp = otpService.generateOtp();
 
-        PasswordResetToken resetToken = PasswordResetToken.builder()
-                .user(user)
-                .otp(otp)
-                .expiryDate(Instant.now().plusSeconds(OTP_EXPIRY_MINUTES * 60L))
-                .used(false)
-                .build();
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setUser(user);
+        resetToken.setOtp(otp);
+        resetToken.setExpiry(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES));
+        resetToken.setUsed(false);
         passwordResetTokenRepository.save(resetToken);
 
         emailService.sendPasswordResetEmail(user.getEmail(), user.getFirstName(), otp);
@@ -278,7 +280,7 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidOtpException("The OTP you entered is incorrect.");
         }
 
-        if (resetToken.getExpiryDate().isBefore(Instant.now())) {
+        if (resetToken.getExpiry().isBefore(LocalDateTime.now())) {
             throw new TokenExpiredException("This OTP has expired. Please request a new one.");
         }
 
@@ -288,9 +290,9 @@ public class AuthServiceImpl implements AuthService {
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        // Invalidate existing sessions so the old password can no longer be used
-        // to mint fresh access tokens via a stale refresh token.
-        refreshTokenRepository.deleteAllByUser(user);
+        // Invalidate the existing session so the old password can no longer be
+        // used to mint fresh access tokens via a stale refresh token.
+        refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
 
         return APIResponse.success("Password reset successfully. Please log in with your new password.", null);
     }
@@ -301,7 +303,7 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * UserResponse is a plain @Getter/@Setter DTO (no builder), so it's
-     * assembled here rather than via AuthServiceImpl construction elsewhere.
+     * assembled here via setters.
      */
     private UserResponse toUserResponse(User user) {
         UserResponse response = new UserResponse();
