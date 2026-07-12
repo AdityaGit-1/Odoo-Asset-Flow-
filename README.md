@@ -98,22 +98,7 @@ domain, optional Python service for analytics.
 | Python / FastAPI | 3.11 / latest (reports service only)                                        |
 | Password hashing | Argon2id via `Argon2PasswordEncoder` (needs Bouncy Castle on classpath)     |
 
-### Gotchas carried forward from Faraday / Relay — apply from the start, don't rediscover
-
-- **`@Transactional` rollback can undo security writes.** If a refresh-token or
-  audit-log write shares a transaction that later throws, the rollback eats it. Put
-  must-persist security writes in `REQUIRES_NEW` or restructure so they commit.
-  (Phase 1, Phase 6.)
-- **`@Async` self-invocation is a no-op.** Calling an `@Async` method from within
-  the same bean bypasses the proxy and runs synchronously. Call through an injected
-  self-reference or a separate bean. (Phase 6 notifications.)
-- **Sign-out race condition.** Concurrent refresh + logout can leave a live token.
-  Make revocation atomic (delete-returning or version check). (Phase 1.)
-- **Postgres healthcheck variable** and **JVM UTC forcing** — see Phase 0 verbatim
-  compose/config (Relay-validated).
-
 ---
-
 ## Phase map & team split
 
 Phases are ordered by dependency, **not** by wall-clock. Fan the team out on the
