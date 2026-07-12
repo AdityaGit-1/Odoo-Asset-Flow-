@@ -18,7 +18,7 @@ public interface ResourceBookingRepository extends JpaRepository<ResourceBooking
     @Query("""
         SELECT rb FROM ResourceBooking rb
         WHERE rb.asset.id = :assetId
-        AND rb.status != com.example.assetflowlogin.entity.BookingStatus.CANCELLED
+        AND rb.status != com.example.assetflowlogin.enums.BookingStatus.CANCELLED
         AND :requestedStart < rb.endTime
         AND :requestedEnd > rb.startTime
         """)
@@ -35,8 +35,8 @@ public interface ResourceBookingRepository extends JpaRepository<ResourceBooking
         SELECT rb FROM ResourceBooking rb
         WHERE rb.asset.id = :assetId
         AND rb.status IN (
-            com.example.assetflowlogin.entity.BookingStatus.UPCOMING,
-            com.example.assetflowlogin.entity.BookingStatus.ONGOING
+            com.example.assetflowlogin.enums.BookingStatus.UPCOMING,
+            com.example.assetflowlogin.enums.BookingStatus.ONGOING
         )
         ORDER BY rb.startTime ASC
         """)

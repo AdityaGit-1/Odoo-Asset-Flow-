@@ -1,4 +1,4 @@
-package com.assetflow.backend.service;
+package com.example.assetflowlogin.service;
 
 public interface EmailService {
 

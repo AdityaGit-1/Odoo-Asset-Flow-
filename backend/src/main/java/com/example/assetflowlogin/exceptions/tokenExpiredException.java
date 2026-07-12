@@ -1,4 +1,4 @@
-package com.assetflow.backend.exception;
+package com.example.assetflowlogin.exceptions;
 
 /**
  * Thrown when a JWT refresh token, OTP, or other time-bound token

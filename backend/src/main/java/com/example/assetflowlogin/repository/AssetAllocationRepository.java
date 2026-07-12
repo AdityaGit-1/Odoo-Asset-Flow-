@@ -1,5 +1,6 @@
 package com.example.assetflowlogin.repository;
 
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,10 +11,6 @@ import java.util.Optional;
 @Repository
 public interface AssetAllocationRepository extends JpaRepository<AssetAllocation, Long> {
 
-    @Query("""
-        SELECT aa FROM AssetAllocation aa 
-        WHERE aa.asset.id = :assetId 
-        AND aa.returnedAt IS NULL
-        """)
-    Optional<AssetAllocation> findActiveAllocationByAssetId(@Param("assetId") Long assetId);
+    @Query("SELECT aa FROM AssetAllocation aa WHERE aa.asset.id = :assetId AND aa.actualReturnDate IS NULL")
+    List<AssetAllocation> findActiveAllocationByAssetId(@Param("assetId") Long assetId);
 }

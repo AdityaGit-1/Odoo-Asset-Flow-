@@ -1,12 +1,12 @@
-package com.assetflow.backend.exception;
+package com.example.assetflowlogin.exceptions;
 
 /**
  * Thrown during registration when the supplied email is already
  * associated with an existing account.
  */
-public class EmailalreadyexistsException extends RuntimeException {
+public class EmailAlreadyExistsException extends RuntimeException {
 
-    public EmailalreadyexistsException(String email) {
+    public EmailAlreadyExistsException(String email) {
         super("An account already exists with email: " + email);
     }
 }

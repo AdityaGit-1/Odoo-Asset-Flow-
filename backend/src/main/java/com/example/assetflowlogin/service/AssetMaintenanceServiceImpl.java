@@ -9,7 +9,9 @@ import com.example.assetflowlogin.dto.response.MaintenanceResponseDTO;
 import com.example.assetflowlogin.entity.Asset;
 import com.example.assetflowlogin.entity.MaintainenceRequest;
 import com.example.assetflowlogin.entity.User;
-import com.example.assetflowlogin.exception.AssetNotAvailableException;
+import com.example.assetflowlogin.enums.MaintainenceStatus;
+import com.example.assetflowlogin.enums.Priority;
+import com.example.assetflowlogin.exceptions.AssetNotAvailableException;
 import com.example.assetflowlogin.repository.AssetRepository;
 import com.example.assetflowlogin.repository.MaintainenceRequestRepository;
 
@@ -28,12 +30,12 @@ public class AssetMaintenanceServiceImpl implements AssetMaintenanceService {
         Asset asset = assetRepository.findById(dto.assetId())
             .orElseThrow(() -> new AssetNotAvailableException("Asset not found with ID: " + dto.assetId()));
 
-        // Using their exact entity spelling structure
         MaintainenceRequest request = MaintainenceRequest.builder()
             .asset(asset)
+            .raisedBy(requester)
             .description(dto.description())
-            .priority(dto.priority())
-            .status("PENDING")
+            .priority(Priority.valueOf(dto.priority().toUpperCase()))
+            .status(MaintainenceStatus.PENDING)
             .build();
 
         MaintainenceRequest saved = maintenanceRepository.save(request);
@@ -46,8 +48,8 @@ public class AssetMaintenanceServiceImpl implements AssetMaintenanceService {
             .assetId(request.getAsset().getId())
             .assetName(request.getAsset().getName())
             .description(request.getDescription())
-            .priority(request.getPriority())
-            .status(request.getStatus())
+            .priority(request.getPriority().name())
+            .status(request.getStatus().name())
             .createdAt(LocalDateTime.now())
             .build();
     }

@@ -1,8 +1,8 @@
-package com.example.assetflowlogin.config;
+package com.example.assetflowlogin.security;
 
+import com.example.assetflowlogin.security.JwtAuthenticationEntryPoint;  
+import com.example.assetflowlogin.security.JwtAuthenticationFilter;     
 import com.example.assetflowlogin.security.CustomUserDetailsService;
-import com.example.assetflowlogin.security.jwt.JwtAuthenticationEntryPoint;
-import com.example.assetflowlogin.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,10 +28,7 @@ public class SecurityConfig {
     @Bean
     AuthenticationProvider authenticationProvider() {
 
-        DaoAuthenticationProvider provider =
-                new DaoAuthenticationProvider();
-
-        provider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
 
         return provider;

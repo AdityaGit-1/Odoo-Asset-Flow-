@@ -7,9 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.assetflowlogin.dto.request.TransferRequestDTO;
 import com.example.assetflowlogin.dto.response.TransferResponseDTO;
 import com.example.assetflowlogin.entity.*;
-import com.example.assetflowlogin.exception.AssetNotAvailableException;
+import com.example.assetflowlogin.enums.TransferStatus;
+import com.example.assetflowlogin.exceptions.AssetNotAvailableException;
 import com.example.assetflowlogin.repository.AssetRepository;
 import com.example.assetflowlogin.repository.TransferRequestRepository;
+import com.example.assetflowlogin.repository.UserRepository;
 
 import java.time.LocalDateTime;
 
@@ -19,6 +21,7 @@ public class AssetTransferServiceImpl implements AssetTransferService {
 
     private final TransferRequestRepository transferRepository;
     private final AssetRepository assetRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -26,15 +29,16 @@ public class AssetTransferServiceImpl implements AssetTransferService {
         Asset asset = assetRepository.findById(dto.assetId())
             .orElseThrow(() -> new AssetNotAvailableException("Asset not found with ID: " + dto.assetId()));
 
-        // Create the transfer record using the existing TransferRequest entity structure
+        // Reference to the target user without loading the full entity
+        User targetUser = userRepository.getReferenceById(dto.targetUserId());
+
         TransferRequest transferRequest = TransferRequest.builder()
             .asset(asset)
-            .sender(sender)
-            // Note: Since User handling logic requires mapping targetUserId, 
-            // a placeholder user shell matches the database reference constraint
-            .receiver(User.builder().id(dto.targetUserId()).build())
+            .fromUser(sender)
+            .toUser(targetUser)
+            .requestedBy(sender)
             .status(TransferStatus.PENDING)
-            .reason(dto.reason())
+            .remarks(dto.reason())
             .build();
 
         TransferRequest savedRequest = transferRepository.save(transferRequest);
@@ -46,12 +50,12 @@ public class AssetTransferServiceImpl implements AssetTransferService {
             .id(request.getId())
             .assetId(request.getAsset().getId())
             .assetName(request.getAsset().getName())
-            .senderId(request.getSender().getId())
-            .senderEmail(request.getSender().getEmail())
-            .receiverId(request.getReceiver().getId())
-            .receiverEmail(request.getReceiver().getEmail())
+            .senderId(request.getFromUser().getId())
+            .senderEmail(request.getFromUser().getEmail())
+            .receiverId(request.getToUser().getId())
+            .receiverEmail(request.getToUser().getEmail())
             .status(request.getStatus())
-            .reason(request.getReason())
+            .reason(request.getRemarks())
             .createdAt(LocalDateTime.now())
             .build();
     }

@@ -1,4 +1,4 @@
-package com.example.assetflowlogin.security.jwt;
+package com.example.assetflowlogin.security;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;

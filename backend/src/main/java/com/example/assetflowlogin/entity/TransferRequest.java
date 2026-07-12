@@ -5,12 +5,16 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.Builder;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 @Entity
 @Table(name = "transfer_requests")
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
 public class TransferRequest extends BaseEntity {
 
     @Id

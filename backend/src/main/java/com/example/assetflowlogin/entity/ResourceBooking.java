@@ -1,5 +1,6 @@
 package com.example.assetflowlogin.entity;
 
+import com.example.assetflowlogin.enums.BookingStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;

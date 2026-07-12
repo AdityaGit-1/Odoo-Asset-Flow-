@@ -1,4 +1,4 @@
-package com.example.assetflowlogin.controller;
+package com.example.assetflowlogin.controllers;
 
 import com.example.assetflowlogin.dto.request.ForgotPasswordRequest;
 import com.example.assetflowlogin.dto.request.LoginRequest;

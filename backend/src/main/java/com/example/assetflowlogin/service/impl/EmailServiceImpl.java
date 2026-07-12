@@ -1,6 +1,6 @@
-package com.assetflow.backend.service.impl;
+package com.example.assetflowlogin.service.impl;
 
-import com.assetflow.backend.service.EmailService;
+import com.example.assetflowlogin.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

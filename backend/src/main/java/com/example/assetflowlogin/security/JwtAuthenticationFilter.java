@@ -1,5 +1,6 @@
-package com.example.assetflowlogin.security.jwt;
+package com.example.assetflowlogin.security;
 
+import com.example.assetflowlogin.security.jwt.JwtService;
 import com.example.assetflowlogin.security.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

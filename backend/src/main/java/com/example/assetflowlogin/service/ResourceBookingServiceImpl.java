@@ -9,9 +9,9 @@ import com.example.assetflowlogin.dto.response.ResourceBookingResponseDTO;
 import com.example.assetflowlogin.entity.Asset;
 import com.example.assetflowlogin.entity.ResourceBooking;
 import com.example.assetflowlogin.entity.User;
-import com.example.assetflowlogin.entity.BookingStatus;
-import com.example.assetflowlogin.exception.AssetNotAvailableException;
-import com.example.assetflowlogin.exception.BookingConflictException;
+import com.example.assetflowlogin.enums.BookingStatus;
+import com.example.assetflowlogin.exceptions.AssetNotAvailableException;
+import com.example.assetflowlogin.exceptions.BookingConflictException;
 import com.example.assetflowlogin.repository.AssetRepository;
 import com.example.assetflowlogin.repository.ResourceBookingRepository;
 

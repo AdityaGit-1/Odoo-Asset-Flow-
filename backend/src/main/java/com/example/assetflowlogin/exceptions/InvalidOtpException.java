@@ -1,4 +1,4 @@
-package com.assetflow.backend.exception;
+package com.example.assetflowlogin.exceptions;
 
 /**
  * Thrown when an OTP supplied for email verification or password

@@ -2,7 +2,7 @@ package com.example.assetflowlogin.dto.response;
 
 import lombok.*;
 import java.time.LocalDateTime;
-import com.example.assetflowlogin.entity.TransferStatus;
+import com.example.assetflowlogin.enums.TransferStatus;
 
 @Data
 @Builder

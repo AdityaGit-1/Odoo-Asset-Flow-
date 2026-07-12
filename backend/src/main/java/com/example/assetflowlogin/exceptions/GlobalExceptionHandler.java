@@ -1,4 +1,4 @@
-package com.example.assetflowlogin.exception;
+package com.example.assetflowlogin.exceptions;
 
 import com.example.assetflowlogin.dto.response.APIResponse;
 import jakarta.validation.ConstraintViolationException;
