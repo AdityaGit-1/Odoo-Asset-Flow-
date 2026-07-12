@@ -1,6 +1,6 @@
-package com.example.assetflowlogin.exception;
+package com.example.assetflowlogin.exceptions;
 
-import com.example.assetflowlogin.dto.response.ApiResponse;
+import com.example.assetflowlogin.dto.response.APIResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -14,41 +14,41 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(AssetNotFoundException.class)
-    public ResponseEntity<ApiResponse<?>> handleAssetNotFoundException(AssetNotFoundException ex) {
+    public ResponseEntity<APIResponse<?>> handleAssetNotFoundException(AssetNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.error(ex.getMessage()));
+                .body(APIResponse.error(ex.getMessage()));
     }
 
     @ExceptionHandler(AssetCategoryNotFoundException.class)
-    public ResponseEntity<ApiResponse<?>> handleAssetCategoryNotFoundException(AssetCategoryNotFoundException ex) {
+    public ResponseEntity<APIResponse<?>> handleAssetCategoryNotFoundException(AssetCategoryNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.error(ex.getMessage()));
+                .body(APIResponse.error(ex.getMessage()));
     }
 
     @ExceptionHandler(DuplicateAssetException.class)
-    public ResponseEntity<ApiResponse<?>> handleDuplicateAssetException(DuplicateAssetException ex) {
+    public ResponseEntity<APIResponse<?>> handleDuplicateAssetException(DuplicateAssetException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ApiResponse.error(ex.getMessage()));
+                .body(APIResponse.error(ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(IllegalArgumentException ex) {
+    public ResponseEntity<APIResponse<?>> handleIllegalArgumentException(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(ex.getMessage()));
+                .body(APIResponse.error(ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<?>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<APIResponse<?>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         String combinedMessage = ex.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("; "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(combinedMessage));
+                .body(APIResponse.error(combinedMessage));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<?>> handleGenericException(Exception ex) {
+    public ResponseEntity<APIResponse<?>> handleGenericException(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("An unexpected error occurred"));
+                .body(APIResponse.error("An unexpected error occurred"));
     }
 }

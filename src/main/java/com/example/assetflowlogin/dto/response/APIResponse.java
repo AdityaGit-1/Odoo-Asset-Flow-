@@ -2,30 +2,30 @@ package com.example.assetflowlogin.dto.response;
 
 import java.time.Instant;
 
-public class ApiResponse<T> {
+public class APIResponse<T> {
 
     private final boolean success;
     private final String message;
     private final T data;
     private final Instant timestamp;
 
-    private ApiResponse(boolean success, String message, T data) {
+    private APIResponse(boolean success, String message, T data) {
         this.success = success;
         this.message = message;
         this.data = data;
         this.timestamp = Instant.now();
     }
 
-    public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, null, data);
+    public static <T> APIResponse<T> success(T data) {
+        return new APIResponse<>(true, null, data);
     }
 
-    public static <T> ApiResponse<T> success(String message, T data) {
-        return new ApiResponse<>(true, message, data);
+    public static <T> APIResponse<T> success(String message, T data) {
+        return new APIResponse<>(true, message, data);
     }
 
-    public static <T> ApiResponse<T> error(String message) {
-        return new ApiResponse<>(false, message, null);
+    public static <T> APIResponse<T> error(String message) {
+        return new APIResponse<>(false, message, null);
     }
 
     public boolean isSuccess() {

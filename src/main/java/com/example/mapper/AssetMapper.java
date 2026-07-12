@@ -1,4 +1,4 @@
-package com.example.assetflowlogin.mapper;
+package com.example.mapper;
 
 import com.example.assetflowlogin.dto.request.CreateAssetRequest;
 import com.example.assetflowlogin.dto.request.UpdateAssetRequest;

@@ -1,4 +1,4 @@
-package com.example.assetflowlogin.exception;
+package com.example.assetflowlogin.exceptions;
 
 public class DuplicateAssetException extends RuntimeException {
 
