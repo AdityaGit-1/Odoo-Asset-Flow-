@@ -47,6 +47,17 @@ export const CYCLE_STATUS = {
   CLOSED: { label: "Closed", fg: "#475467", bg: "#F2F4F7", dot: "#98A2B3" },
 } as const;
 
+export const ALLOCATION_STATUS = {
+  ACTIVE:   { label: "Active",   fg: "#1570EF", bg: "#EFF8FF", dot: "#2E90FA" },
+  RETURNED: { label: "Returned", fg: "#475467", bg: "#F2F4F7", dot: "#98A2B3" },
+} as const;
+
+// Binary active/inactive for org entities (departments, categories, employees).
+export const ENTITY_STATUS = {
+  ACTIVE:   { label: "Active",   fg: "#067647", bg: "#ECFDF3", dot: "#17B26A" },
+  INACTIVE: { label: "Inactive", fg: "#475467", bg: "#F2F4F7", dot: "#98A2B3" },
+} as const;
+
 export type StatusStyle = { label: string; fg: string; bg: string; dot: string };
 
 export type AssetStatusKey = keyof typeof ASSET_STATUS;
@@ -63,6 +74,8 @@ export const STATUS_DOMAINS = {
   audit: AUDIT_RESULT,
   transfer: TRANSFER_STATUS,
   cycle: CYCLE_STATUS,
+  allocation: ALLOCATION_STATUS,
+  entity: ENTITY_STATUS,
 } as const;
 
 export type StatusDomain = keyof typeof STATUS_DOMAINS;
