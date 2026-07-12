@@ -1,4 +1,4 @@
-package com.assetflow.assetflowlogin.config;
+package com.example.assetflowlogin.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
