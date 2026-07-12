@@ -8,7 +8,7 @@ import com.example.assetflowlogin.dto.response.AssetResponse;
 import com.example.assetflowlogin.entity.Asset;
 import com.example.assetflowlogin.entity.AssetCategory;
 import com.example.assetflowlogin.enums.AssetStatus;
-import com.example.mapper.AssetMapper;
+import com.example.assetflowlogin.mapper.AssetMapper;
 import com.example.assetflowlogin.service.AssetService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
